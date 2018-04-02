@@ -1,0 +1,3 @@
+[console_scripts]
+qtpip = qtpip.__main__:main
+
