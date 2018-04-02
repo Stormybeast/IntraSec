@@ -1,5 +1,6 @@
 import socket,os
 from struct import *
+import get_ip
 
 
 def get_e_addr(a):
@@ -8,6 +9,8 @@ def get_e_addr(a):
 
 def list_of_arp():
     os.system("fping ")
+
+
 if __name__ == "__main__":
 
     s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
@@ -23,4 +26,3 @@ if __name__ == "__main__":
         e_protocol = socket.ntohs(e[2])
         if e_protocol == 8 and get_e_addr(pack[0:6]) != "ff:ff:ff:ff:ff:ff":
             print('Destination MAC : ' + get_e_addr(pack[0:6]) + ' Source MAC : ' + get_e_addr(pack[6:12]) + ' Protocol : ' + str(e_protocol))
-
