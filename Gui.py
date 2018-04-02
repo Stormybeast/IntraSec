@@ -3,11 +3,13 @@
 from PyQt4 import QtGui,QtCore
 import sys
 import time
+import get_ip
 
 my_array = [['mac1','ip1'],
             ['mac2','ip2'],
             ['mac3','ip3']]
-            
+timer = 1
+arp_table = {}
 class App(QtGui.QMainWindow):
 
     def __init__(self,title):
@@ -81,8 +83,9 @@ class App(QtGui.QMainWindow):
         btn_stop = QtGui.QPushButton("Stop")
 
         # bind events to buttons
-        btn_start.clicked.connect(self.update_arp)
+        btn_start.clicked.connect(self.start_arp)
         btn_clear.clicked.connect(self.clear_arp)
+        btn_stop.clicked.connect(self.stop_arp)
      
         leftTopLayout.addWidget(btn_start)
         leftTopLayout.addWidget(btn_clear)
@@ -113,14 +116,35 @@ class App(QtGui.QMainWindow):
         w = QtGui.QWidget()
         QtGui.QMessageBox.about(w,"About","Laveen Vasinani\nPravina Bhatt\nYixian Hao")
 
-    def update_arp(self):
-        my_array.append(["NEWMAC","IP"])
+    def update_arp(self,mac,ip):
+        my_array.append([mac,ip])
         self.arp_table_model.layoutChanged.emit()
         self.table_arp.resize()
-        
+
+    def start_arp(self):
+        self.setTimer(3)
+
+
+    def refreshARP(self):
+        global arp_table
+        arp_table = get_ip.get_arp()
+        print(arp_table)
+        print("Refreshing")
+
+
+    def setTimer(self,interval):
+        global timer
+        timer = QtCore.QTimer(self)
+        timer.timeout.connect(self.refreshARP)
+        timer.setInterval(interval*1000)
+        timer.start()
+
     def clear_arp(self):
         my_array.clear()
         self.arp_table_model.layoutChanged.emit()
+
+    def stop_arp(self):
+        timer.stop()
 
 class myArpTable(QtGui.QTableView):
     def __init__(self,parent,model,*args):
@@ -180,3 +204,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
