@@ -1,8 +1,11 @@
-import socket, os, threading, multiprocessing
+import socket, multiprocessing,os, time
 from struct import *
 import get_ip,pyttsx3
 
-arp = {}
+interface = "wlp8s0"
+
+class arp_table:
+    arp = {}
 
 
 # class scan_thread(threading.Thread):
@@ -13,7 +16,7 @@ arp = {}
 #     def run(self):
 #         self.analyze()
 
-def analyze(pack):
+def analyze(pack,):
     pack = pack[0]
     e_length = 14
     e_header = pack[:e_length]
@@ -25,16 +28,25 @@ def analyze(pack):
         iph = unpack('!BBHHHBBH4s4s', i_head)
         s_ip = socket.inet_ntoa(iph[8])
         d_ip = socket.inet_ntoa(iph[9])
+
+
         print('Source MAC : '+e_addr)
         print('Source IP: '+str(s_ip))
         print('Dest MAC : ' + get_e_addr(pack[0:6]))
         print('Dest IP: '+str(d_ip))
-        #print(arp)
-        # if e_addr in arp and s_ip != arp[e_addr]:
-        #
-        #     print("Mac Address of Attacker: "+e_addr+" IP Spoofed: "+s_ip+" Actual IP:"+arp[e_addr])
-        #     engine.say('Intrusion Alert! Intrusion Alert! The Network has been breached! Run preventive maneuvers now!')
-        #     engine.runAndWait()
+
+        if e_addr in arp_table.arp and s_ip != arp_table.arp[e_addr]:
+             c=1
+             i=0
+             while i < len(arp_table.arp):
+                 if s_ip == arp_table.arp[i]:
+                     c+=1
+                     break
+                 i+=1
+             if c > 1:
+                 print("Mac Address of Attacker: " + e_addr + " IP Spoofed: " + s_ip + " Actual IP:" + arp_table.arp[e_addr])
+                 engine.say('Intrusion Alert! Intrusion Alert! The Network has been breached! Run preventive maneuvers now!')
+                 engine.runAndWait()
 
 
 def get_e_addr(a):
@@ -42,12 +54,62 @@ def get_e_addr(a):
     return e_addr
 
 
+def caller():
+    while True:
+        get_arp()
+        time.sleep(60)
+
+
+def get_sys_ip():
+    ip = os.popen("ifconfig wlp8s0 | grep \"inet addr\" | cut -d ':' -f 2 | cut -d ' ' -f 1")
+    ip = str(ip.read())
+    print("The system ip is: "+ip)
+    return ip
+
+
+def get_ip_list():
+    os.system("arp -i "+interface+" -n | grep -oE \"((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\" > /media/codemaster94sb/0800FF7600FF6958/MyPlayground/\"Python Projects\"/IntraSec/ips.txt")
+    ips = open("/media/codemaster94sb/0800FF7600FF6958/MyPlayground/Python Projects/IntraSec/ips.txt")
+    ip_list = ips.readlines()
+    ip_list = [x.strip() for x in ip_list]
+    return ip_list
+
+
+def get_mac_list():
+    os.system("arp -i wlp8s0 -n | grep -oE \"([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})\" > /media/codemaster94sb/0800FF7600FF6958/MyPlayground/\"Python Projects\"/IntraSec/macs.txt")
+    macs = open("/media/codemaster94sb/0800FF7600FF6958/MyPlayground/Python Projects/IntraSec/macs.txt")
+    mac_list = macs.readlines()
+    mac_list = [x.strip() for x in mac_list]
+    return mac_list
+
+
+def get_arp():
+    sys_ip = get_sys_ip().strip()
+    print("fping -g "+sys_ip+"/24")
+    os.system("fping -g "+sys_ip+"/24 -q")
+    time.sleep(15)
+    ip_list = get_ip_list()
+    mac_list = get_mac_list()
+    for i in range(len(ip_list)):
+        arp_table.arp[mac_list[i]] = ip_list[i]
+
+    return 1
+
+
+def caller():
+    while True:
+        get_arp()
+        time.sleep(60)
+
+
 if __name__ == "__main__":
     engine = pyttsx3.init()
     rate = engine.getProperty('rate')
     engine.setProperty('rate', rate - 50)
+    engine.say('The IntraSec Module has been started')
+    engine.runAndWait()
     pool = multiprocessing.Pool(processes=1)
-    pool.apply_async(get_ip.caller, [])
+    pool.apply_async(caller, [])
     s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
     pool1 = multiprocessing.Pool(processes=50)
     while True:
