@@ -1,22 +1,11 @@
-import socket, multiprocessing,os, time
+import socket, multiprocessing, os, time, pyttsx3
 from struct import *
-import get_ip,pyttsx3
 
 interface = "wlp8s0"
 
-class arp_table:
-    arp = {}
 
-
-# class scan_thread(threading.Thread):
-#     def __init__(self, pack):
-#         super(scan_thread, self).__init__()
-#         self.pack = pack
-#
-#     def run(self):
-#         self.analyze()
-
-def analyze(pack,):
+def analyze(pack,ip_list,mac_list):
+    arp = build_arp(ip_list,mac_list)
     pack = pack[0]
     e_length = 14
     e_header = pack[:e_length]
@@ -28,25 +17,29 @@ def analyze(pack,):
         iph = unpack('!BBHHHBBH4s4s', i_head)
         s_ip = socket.inet_ntoa(iph[8])
         d_ip = socket.inet_ntoa(iph[9])
-
-
         print('Source MAC : '+e_addr)
         print('Source IP: '+str(s_ip))
         print('Dest MAC : ' + get_e_addr(pack[0:6]))
         print('Dest IP: '+str(d_ip))
-
-        if e_addr in arp_table.arp and s_ip != arp_table.arp[e_addr]:
+        if e_addr in arp and s_ip != arp[e_addr]:
              c=1
              i=0
-             while i < len(arp_table.arp):
-                 if s_ip == arp_table.arp[i]:
+             while i < len(arp):
+                 if s_ip == arp[i]:
                      c+=1
                      break
                  i+=1
              if c > 1:
-                 print("Mac Address of Attacker: " + e_addr + " IP Spoofed: " + s_ip + " Actual IP:" + arp_table.arp[e_addr])
+                 print("Mac Address of Attacker: " + e_addr + " IP Spoofed: " + s_ip + " Actual IP:" + arp[e_addr])
                  engine.say('Intrusion Alert! Intrusion Alert! The Network has been breached! Run preventive maneuvers now!')
                  engine.runAndWait()
+
+
+def build_arp(ip_list,mac_list):
+    arp = {}
+    for i in range(len(ip_list)):
+        arp[mac_list[i]] = ip_list[i]
+    return arp
 
 
 def get_e_addr(a):
@@ -88,11 +81,6 @@ def get_arp():
     print("fping -g "+sys_ip+"/24")
     os.system("fping -g "+sys_ip+"/24 -q")
     time.sleep(15)
-    ip_list = get_ip_list()
-    mac_list = get_mac_list()
-    for i in range(len(ip_list)):
-        arp_table.arp[mac_list[i]] = ip_list[i]
-
     return 1
 
 
@@ -106,12 +94,17 @@ if __name__ == "__main__":
     engine = pyttsx3.init()
     rate = engine.getProperty('rate')
     engine.setProperty('rate', rate - 50)
-    engine.say('The IntraSec Module has been started')
+    engine.say('The IntraSec Module has been initialised!')
     engine.runAndWait()
     pool = multiprocessing.Pool(processes=1)
     pool.apply_async(caller, [])
+    time.sleep(45)
+    engine.say('The module, will now start scanning the network!')
+    engine.runAndWait()
     s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
     pool1 = multiprocessing.Pool(processes=50)
     while True:
         pack = s.recvfrom(65565)
-        pool1.apply_async(analyze, [pack])
+        ip_list = get_ip_list()
+        mac_list = get_mac_list()
+        pool1.apply_async(analyze, [pack, ip_list, mac_list])
