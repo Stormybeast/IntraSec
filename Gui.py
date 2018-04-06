@@ -2,7 +2,6 @@
 
 from PyQt4 import QtGui,QtCore
 import sys,time,multiprocessing
-import get_ip
 
 my_array = [['mac1','ip1'],
             ['mac2','ip2'],
@@ -96,6 +95,7 @@ class App(QtGui.QMainWindow):
         self.table_attacker = QtGui.QListView(leftBottompWidget)
         leftBottompLayout.addWidget(label_attacker)
         leftBottompLayout.addWidget(self.table_attacker)
+        self.attacker_model = QtGui.QStandardItemModel(self.table_attacker)
 
         # add ARP Table
         label_arp = QtGui.QLabel("ARP Table")
@@ -120,8 +120,14 @@ class App(QtGui.QMainWindow):
         self.arp_table_model.layoutChanged.emit()
         self.table_arp.resize()
 
+    def update_attacker(self,label):
+        item = QtGui.QStandardItem(label)
+        self.attacker_model.appendRow(item)
+        self.table_attacker.setModel(self.attacker_model)
+
     def test(self):
-        print("Analyzing...")
+        self.update_attacker("Analyzing...")
+        self.update_attacker("Attacker found")
 
     # scan the LAN and create ARP tables
     def start_arp(self):
@@ -132,17 +138,10 @@ class App(QtGui.QMainWindow):
         # update the UI when ARP table has been created
         self.workingThread.trigger.connect(self.test)
         self.workingThread.start()
-        self.table_attacker.
+        self.update_attacker("Start analyzing...")
 
     def refreshARP(self):
-        print("Refreshing...")
-
-    def setTimer(self,interval):
-        global timer
-        timer = QtCore.QTimer(self)
-        timer.timeout.connect(self.refreshARP)
-        timer.setInterval(interval*1000)
-        timer.start()
+        self.update_attacker("Refreshing...")
 
     def clear_arp(self):
         my_array.clear()
@@ -150,7 +149,7 @@ class App(QtGui.QMainWindow):
 
     def stop_arp(self):
         if self.workingThread is not None:
-            print("Stoping...")
+            self.update_attacker("Stoping...")
             self.workingThread.stop()
             self.workingThread = None
             self.btn_start.setEnabled(True)
