@@ -1,8 +1,9 @@
 import socket, multiprocessing, os, time, pyttsx3
 from struct import *
 
-interface = "wlp8s0"
-
+interface = "wlp4s0"
+# project_path = "/media/codemaster94sb/0800FF7600FF6958/MyPlayground/Python Projects/IntraSec/"
+project_path = ""
 
 def analyze(pack,ip_list,mac_list):
     arp = build_arp(ip_list,mac_list)
@@ -54,23 +55,23 @@ def caller():
 
 
 def get_sys_ip():
-    ip = os.popen("ifconfig wlp8s0 | grep \"inet addr\" | cut -d ':' -f 2 | cut -d ' ' -f 1")
+    ip = os.popen("ifconfig "+interface+" | grep \"inet addr\" | cut -d ':' -f 2 | cut -d ' ' -f 1")
     ip = str(ip.read())
     print("The system ip is: "+ip)
     return ip
 
 
 def get_ip_list():
-    os.system("arp -i "+interface+" -n | grep -oE \"((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\" > /media/codemaster94sb/0800FF7600FF6958/MyPlayground/\"Python Projects\"/IntraSec/ips.txt")
-    ips = open("/media/codemaster94sb/0800FF7600FF6958/MyPlayground/Python Projects/IntraSec/ips.txt")
+    os.system("arp -i "+interface+" -n | grep -oE \"((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\" > "+project_path+"ips.txt")
+    ips = open("ips.txt")
     ip_list = ips.readlines()
     ip_list = [x.strip() for x in ip_list]
     return ip_list
 
 
 def get_mac_list():
-    os.system("arp -i wlp8s0 -n | grep -oE \"([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})\" > /media/codemaster94sb/0800FF7600FF6958/MyPlayground/\"Python Projects\"/IntraSec/macs.txt")
-    macs = open("/media/codemaster94sb/0800FF7600FF6958/MyPlayground/Python Projects/IntraSec/macs.txt")
+    os.system("arp -i "+interface+" -n | grep -oE \"([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})\" > "+project_path+"macs.txt")
+    macs = open(project_path+"macs.txt")
     mac_list = macs.readlines()
     mac_list = [x.strip() for x in mac_list]
     return mac_list
