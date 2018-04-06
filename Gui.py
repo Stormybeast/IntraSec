@@ -1,8 +1,7 @@
 #! /usr/bin/env python
 
 from PyQt4 import QtGui,QtCore
-import sys
-import time
+import sys,time,multiprocessing
 import get_ip
 
 my_array = [['mac1','ip1'],
@@ -15,6 +14,7 @@ class App(QtGui.QMainWindow):
     def __init__(self,title):
         super(App, self).__init__()
         qss_file = open('style.qss').read()
+        self.workingThread = None
         self.setStyleSheet(qss_file)
         self.initUI(title)
         self.show()
@@ -78,24 +78,24 @@ class App(QtGui.QMainWindow):
 
 
         # add buttons
-        btn_start = QtGui.QPushButton("Start")
-        btn_clear = QtGui.QPushButton("Clear")
-        btn_stop = QtGui.QPushButton("Stop")
+        self.btn_start = QtGui.QPushButton("Start")
+        self.btn_clear = QtGui.QPushButton("Clear")
+        self.btn_stop = QtGui.QPushButton("Stop")
 
         # bind events to buttons
-        btn_start.clicked.connect(self.start_arp)
-        btn_clear.clicked.connect(self.clear_arp)
-        btn_stop.clicked.connect(self.stop_arp)
+        self.btn_start.clicked.connect(self.start_arp)
+        self.btn_clear.clicked.connect(self.clear_arp)
+        self.btn_stop.clicked.connect(self.stop_arp)
      
-        leftTopLayout.addWidget(btn_start)
-        leftTopLayout.addWidget(btn_clear)
-        leftTopLayout.addWidget(btn_stop)
+        leftTopLayout.addWidget(self.btn_start)
+        leftTopLayout.addWidget(self.btn_clear)
+        leftTopLayout.addWidget(self.btn_stop)
 
         # add potential attacker
         label_attacker = QtGui.QLabel("Attacker")
-        table_attacker = QtGui.QTableView(leftBottompWidget)
+        self.table_attacker = QtGui.QListView(leftBottompWidget)
         leftBottompLayout.addWidget(label_attacker)
-        leftBottompLayout.addWidget(table_attacker)
+        leftBottompLayout.addWidget(self.table_attacker)
 
         # add ARP Table
         label_arp = QtGui.QLabel("ARP Table")
@@ -109,28 +109,33 @@ class App(QtGui.QMainWindow):
         outerLayout.addWidget(leftWidget)
         outerLayout.addWidget(rightWidget)
 
-    def _handle_combo_index_changed(self,idx):
-        self.centralWidget().children()[1].children()[1].setText(str(idx))
-
     def onAbout(self):
         w = QtGui.QWidget()
         QtGui.QMessageBox.about(w,"About","Laveen Vasinani\nPravina Bhatt\nYixian Hao")
 
-    def update_arp(self,mac,ip):
-        my_array.append([mac,ip])
+    # update the ARP table of the UI
+    def update_arp(self):
+        for (k, v) in arp_table.items():
+            my_array.append([k, v])
         self.arp_table_model.layoutChanged.emit()
         self.table_arp.resize()
 
-    def start_arp(self):
-        self.setTimer(3)
+    def test(self):
+        print("Analyzing...")
 
+    # scan the LAN and create ARP tables
+    def start_arp(self):
+        # disable the "start" button after clicking
+        self.btn_start.setEnabled(False)
+        # create a thread for the work otherwise the UI will stuck
+        self.workingThread = workThread(self)
+        # update the UI when ARP table has been created
+        self.workingThread.trigger.connect(self.test)
+        self.workingThread.start()
+        self.table_attacker.
 
     def refreshARP(self):
-        global arp_table
-        arp_table = get_ip.get_arp()
-        print(arp_table)
-        print("Refreshing")
-
+        print("Refreshing...")
 
     def setTimer(self,interval):
         global timer
@@ -144,11 +149,16 @@ class App(QtGui.QMainWindow):
         self.arp_table_model.layoutChanged.emit()
 
     def stop_arp(self):
-        timer.stop()
+        if self.workingThread is not None:
+            print("Stoping...")
+            self.workingThread.stop()
+            self.workingThread = None
+            self.btn_start.setEnabled(True)
+
 
 class myArpTable(QtGui.QTableView):
-    def __init__(self,parent,model,*args):
-        QtGui.QTableView.__init__(self,parent,*args)
+    def __init__(self, parent, model, *args):
+        super(QtGui.QTableView, self).__init__(parent, *args)
         self.model = model
         self.setModel(self.model)
         self.parent = parent
@@ -195,6 +205,29 @@ class myTableModel(QtCore.QAbstractTableModel):
             return self.headerdata[col]
         else:
             return None
+
+
+class workThread(QtCore.QThread):
+    trigger = QtCore.pyqtSignal()
+    def __init__(self,app):
+        super(QtCore.QThread, self).__init__()
+        self.stopFlag = False
+        self.app = app
+
+    def stop(self):
+        self.stopFlag = True
+
+    def __del__(self):
+        self.quit()
+        # self.wait()
+
+    def run(self):
+        while not self.stopFlag:
+            # create the ARP table
+            self.app.refreshARP()
+            self.trigger.emit()
+            time.sleep(2)
+
 
 def main():
     window = QtGui.QApplication(sys.argv)
