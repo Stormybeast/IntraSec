@@ -22,18 +22,12 @@ def analyze(pack,ip_list,mac_list):
         print('Source IP: '+str(s_ip))
         print('Dest MAC : ' + get_e_addr(pack[0:6]))
         print('Dest IP: '+str(d_ip))
-        if e_addr in arp and s_ip != arp[e_addr]:
-             c=1
-             i=0
-             while i < len(arp):
-                 if s_ip == arp[i]:
-                     c+=1
-                     break
-                 i+=1
-             if c > 1:
-                 print("Mac Address of Attacker: " + e_addr + " IP Spoofed: " + s_ip + " Actual IP:" + arp[e_addr])
-                 engine.say('Intrusion Alert! Intrusion Alert! The Network has been breached! Run preventive maneuvers now!')
-                 engine.runAndWait()
+
+        if mac_list.count(e_addr) > 1:
+            print("Mac Address of Attacker: " + e_addr + " IP Spoofed: " + s_ip)
+            engine.say('Intrusion Alert! Intrusion Alert! The Network has been breached! Run preventive maneuvers now!')
+            engine.runAndWait()
+            return True
 
 
 def build_arp(ip_list,mac_list):
@@ -81,7 +75,6 @@ def get_arp():
     sys_ip = get_sys_ip().strip()
     print("fping -g "+sys_ip+"/24")
     os.system("fping -g "+sys_ip+"/24 -q")
-    time.sleep(15)
     return 1
 
 
