@@ -4,9 +4,7 @@ from PyQt4 import QtGui,QtCore
 import sys,time,multiprocessing, socket
 import IntraSec
 
-my_array = [['mac1','ip1'],
-            ['mac2','ip2'],
-            ['mac3','ip3']]
+my_array = []
 timer = 1
 arp_table = {}
 class App(QtGui.QMainWindow):
@@ -24,7 +22,7 @@ class App(QtGui.QMainWindow):
     def initUI(self,title):
         self.statusBar()
         self.setWindowTitle(title)
-        self.setFixedSize(640,960)
+        self.setFixedSize(640,480)
 
         # set layout of outer frame
         mainWidget = QtGui.QWidget(self)
@@ -118,8 +116,10 @@ class App(QtGui.QMainWindow):
 
     # update the ARP table of the UI
     def update_arp(self):
+        my_array = []
         mac_list = IntraSec.get_mac_list()
         ip_list = IntraSec.get_ip_list()
+        self.update_attacker("entering line 122......")
         for (k, v) in list(zip(mac_list, ip_list)):
             my_array.append([k, v])
         self.arp_table_model.layoutChanged.emit()
@@ -142,9 +142,10 @@ class App(QtGui.QMainWindow):
         # update the UI when ARP table has been created
         self.arpingThread.trigger.connect(self.update_arp)
         # update the UI when attacker has been found
-        self.workingThread.trigger.connect(self.update_attacker, ["Found Attacker"])
+        self.workingThread.trigger.connect(lambda :self.update_attacker("Found Attacker"))
 
         self.arpingThread.start()
+        time.sleep(45)
         self.workingThread.start()
         self.update_attacker("Start analyzing...")
 
@@ -235,9 +236,9 @@ class workThread(QtCore.QThread):
         while not self.stopFlag:
             # find the attacker
             pack = s.recvfrom(65565)
-            if pool1.apply_async(IntraSec.analyze, [pack, self.app.ip_list, self.app.mac_list]):
-                    self.trigger.emit()
-            # time.sleep(2)
+            pool1.apply_async(IntraSec.analyze, [pack, self.app.ip_list, self.app.mac_list, self.trigger])
+
+        pool1.close()
 
 
 class arpThread(QtCore.QThread):
@@ -246,14 +247,17 @@ class arpThread(QtCore.QThread):
     def __init__(self, app):
         super(QtCore.QThread, self).__init__()
         self.stopFlag = False
+        self.app = app
 
     def __del__(self):
         self.wait()
 
     def run(self):
-        while True and self.stopFlag:
+        while not self.stopFlag:
+            self.app.update_attacker("Creating ARP...")
             IntraSec.get_arp()
-            time.sleep(60)
+            self.app.update_attacker("Done ARP")
+            time.sleep(45)
             self.trigger.emit()
 
     def stop(self):

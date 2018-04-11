@@ -1,11 +1,11 @@
 import socket, multiprocessing, os, time, pyttsx3
 from struct import *
 
-interface = "wlp4s0"
-# project_path = "/media/codemaster94sb/0800FF7600FF6958/MyPlayground/Python Projects/IntraSec/"
-project_path = ""
+interface = "wlp8s0"
+project_path = "/media/codemaster94sb/0800FF7600FF6958/MyPlayground/Python\ Projects/IntraSec/"
+# project_path = ""
 
-def analyze(pack,ip_list,mac_list):
+def analyze(pack,ip_list,mac_list,thread=None):
     arp = build_arp(ip_list,mac_list)
     pack = pack[0]
     e_length = 14
@@ -27,7 +27,8 @@ def analyze(pack,ip_list,mac_list):
             print("Mac Address of Attacker: " + e_addr + " IP Spoofed: " + s_ip)
             engine.say('Intrusion Alert! Intrusion Alert! The Network has been breached! Run preventive maneuvers now!')
             engine.runAndWait()
-            return True
+            if thread is not None:
+                thread.emit()
 
 
 def build_arp(ip_list,mac_list):
@@ -57,7 +58,7 @@ def get_sys_ip():
 
 def get_ip_list():
     os.system("arp -i "+interface+" -n | grep -oE \"((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\" > "+project_path+"ips.txt")
-    ips = open("ips.txt")
+    ips = open(project_path+"ips.txt")
     ip_list = ips.readlines()
     ip_list = [x.strip() for x in ip_list]
     return ip_list
