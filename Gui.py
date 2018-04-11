@@ -118,9 +118,9 @@ class App(QtGui.QMainWindow):
 
     # update the ARP table of the UI
     def update_arp(self):
-        mac_list = IntraSec.get_mac_list()
-        ip_list = IntraSec.get_ip_list()
-        for (k, v) in list(zip(mac_list, ip_list)):
+        self.mac_list = IntraSec.get_mac_list()
+        self.ip_list = IntraSec.get_ip_list()
+        for (k, v) in list(zip(self.mac_list, self.ip_list)):
             my_array.append([k, v])
         self.arp_table_model.layoutChanged.emit()
         self.table_arp.resize()
@@ -253,6 +253,7 @@ class arpThread(QtCore.QThread):
     def run(self):
         while True and self.stopFlag:
             IntraSec.get_arp()
+            self.app.update_attacker("Creating ARP Tables....")
             time.sleep(60)
             self.trigger.emit()
 
