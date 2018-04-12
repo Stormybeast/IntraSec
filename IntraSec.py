@@ -23,15 +23,9 @@ def analyze(pack,ip_list,mac_list,thread=None):
        # print('Dest MAC : ' + get_e_addr(pack[0:6]))
        # print('Dest IP: '+str(d_ip))
 
-<<<<<<< HEAD
         if arp.count(e_addr) > 1:
             print("Mac Address of Attacker: " + e_addr + " IP: " + s_ip)
             engine.say('Possible Intrusion Alert! Network may have been breached! Run preventive maneuvers!')
-=======
-        if mac_list.count(e_addr) > 1:
-            print("Mac Address of Attacker: " + e_addr + " IP Spoofed: " + s_ip)
-            engine.say('Intruder Alert! Intrusion Alert! The Network has been breached! Run preventive maneuvers now!')
->>>>>>> c157c604a25c3515da5fdb03c2b743517f2c4587
             engine.runAndWait()
             if thread is not None:
                 thread.emit()
