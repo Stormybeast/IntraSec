@@ -25,7 +25,7 @@ def analyze(pack,ip_list,mac_list,thread=None):
 
         if mac_list.count(e_addr) > 1:
             print("Mac Address of Attacker: " + e_addr + " IP Spoofed: " + s_ip)
-            engine.say('Intrusion Alert! Intrusion Alert! The Network has been breached! Run preventive maneuvers now!')
+            engine.say('Intruder Alert! Intrusion Alert! The Network has been breached! Run preventive maneuvers now!')
             engine.runAndWait()
             if thread is not None:
                 thread.emit()
