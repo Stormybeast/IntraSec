@@ -1,8 +1,13 @@
 import socket, multiprocessing, os, time, pyttsx3
 from struct import *
 
+<<<<<<< HEAD
 interface = "wlp8s0"
 #project_path = "/media/codemaster94sb/0800FF7600FF6958/MyPlayground/\"Python Projects\"/IntraSec/"
+=======
+interface = "wlp4s0"
+# project_path = "/media/codemaster94sb/0800FF7600FF6958/MyPlayground/Python\ Projects/IntraSec/"
+>>>>>>> fa73ed3c94fd94da0e384ebfc8a7ed09f0cb61fd
 project_path = ""
 
 def analyze(pack,ip_list,mac_list,thread=None):
