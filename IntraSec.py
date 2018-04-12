@@ -19,13 +19,13 @@ def analyze(pack,ip_list,mac_list,thread=None):
         s_ip = socket.inet_ntoa(iph[8])
         d_ip = socket.inet_ntoa(iph[9])
         print('Source MAC : '+e_addr)
-        print('Source IP: '+str(s_ip))
-        print('Dest MAC : ' + get_e_addr(pack[0:6]))
-        print('Dest IP: '+str(d_ip))
+       # print('Source IP: '+str(s_ip))
+       # print('Dest MAC : ' + get_e_addr(pack[0:6]))
+       # print('Dest IP: '+str(d_ip))
 
-        if mac_list.count(e_addr) > 1:
-            print("Mac Address of Attacker: " + e_addr + " IP Spoofed: " + s_ip)
-            engine.say('Intrusion Alert! Intrusion Alert! The Network has been breached! Run preventive maneuvers now!')
+        if arp.count(e_addr) > 1:
+            print("Mac Address of Attacker: " + e_addr + " IP: " + s_ip)
+            engine.say('Possible Intrusion Alert! Network may have been breached! Run preventive maneuvers!')
             engine.runAndWait()
             if thread is not None:
                 thread.emit()
