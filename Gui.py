@@ -4,7 +4,7 @@ from PyQt4 import QtGui,QtCore
 import sys,time,multiprocessing, socket
 import IntraSec
 
-my_array = []
+my_array = [['a','b']]
 timer = 1
 arp_table = {}
 class App(QtGui.QMainWindow):
@@ -15,6 +15,7 @@ class App(QtGui.QMainWindow):
         super(App, self).__init__()
         qss_file = open('style.qss').read()
         self.workingThread = None
+        self.arpingThread = None
         self.setStyleSheet(qss_file)
         self.initUI(title)
         self.show()
@@ -94,6 +95,7 @@ class App(QtGui.QMainWindow):
         # add potential attacker
         label_attacker = QtGui.QLabel("Attacker")
         self.table_attacker = QtGui.QListView(leftBottompWidget)
+        self.table_attacker.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         leftBottompLayout.addWidget(label_attacker)
         leftBottompLayout.addWidget(self.table_attacker)
         self.attacker_model = QtGui.QStandardItemModel(self.table_attacker)
@@ -116,10 +118,11 @@ class App(QtGui.QMainWindow):
 
     # update the ARP table of the UI
     def update_arp(self):
-        my_array = []
+        # address of my_array cannot be changed otherwise the UI doesn't refresh
+        global my_array,mac_list,ip_list
+        my_array.clear()
         mac_list = IntraSec.get_mac_list()
         ip_list = IntraSec.get_ip_list()
-        self.update_attacker("entering line 122......")
         for (k, v) in list(zip(mac_list, ip_list)):
             my_array.append([k, v])
         self.arp_table_model.layoutChanged.emit()
@@ -142,14 +145,14 @@ class App(QtGui.QMainWindow):
         # update the UI when ARP table has been created
         self.arpingThread.trigger.connect(self.update_arp)
         # update the UI when attacker has been found
-        self.workingThread.trigger.connect(lambda :self.update_attacker("Found Attacker"))
+        self.workingThread.trigger.connect(lambda:self.update_attacker("Found Attacker"))
 
         self.arpingThread.start()
-        time.sleep(45)
+        time.sleep(60)
         self.workingThread.start()
         self.update_attacker("Start analyzing...")
 
-    def clear_arp(self):
+    def clear_arp(self,ll):
         my_array.clear()
         self.arp_table_model.layoutChanged.emit()
 
@@ -256,9 +259,10 @@ class arpThread(QtCore.QThread):
         while not self.stopFlag:
             self.app.update_attacker("Creating ARP...")
             IntraSec.get_arp()
+            time.sleep(60)
             self.app.update_attacker("Done ARP")
-            time.sleep(45)
             self.trigger.emit()
+
 
     def stop(self):
         self.stopFlag = True

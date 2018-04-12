@@ -1,9 +1,9 @@
 import socket, multiprocessing, os, time, pyttsx3
 from struct import *
 
-interface = "wlp8s0"
-project_path = "/media/codemaster94sb/0800FF7600FF6958/MyPlayground/Python\ Projects/IntraSec/"
-# project_path = ""
+interface = "wlp4s0"
+# project_path = "/media/codemaster94sb/0800FF7600FF6958/MyPlayground/Python\ Projects/IntraSec/"
+project_path = ""
 
 def analyze(pack,ip_list,mac_list,thread=None):
     arp = build_arp(ip_list,mac_list)
