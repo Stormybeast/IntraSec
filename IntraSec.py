@@ -1,8 +1,13 @@
 import socket, multiprocessing, os, time, pyttsx3
 from struct import *
 
+<<<<<<< HEAD
+interface = "wlp8s0"
+#project_path = "/media/codemaster94sb/0800FF7600FF6958/MyPlayground/\"Python Projects\"/IntraSec/"
+=======
 interface = "wlp4s0"
 # project_path = "/media/codemaster94sb/0800FF7600FF6958/MyPlayground/Python\ Projects/IntraSec/"
+>>>>>>> fa73ed3c94fd94da0e384ebfc8a7ed09f0cb61fd
 project_path = ""
 
 def analyze(pack,ip_list,mac_list,thread=None):
@@ -22,8 +27,9 @@ def analyze(pack,ip_list,mac_list,thread=None):
         print('Source IP: '+str(s_ip))
        # print('Dest MAC : ' + get_e_addr(pack[0:6]))
        # print('Dest IP: '+str(d_ip))
-
-        if arp.count(e_addr) > 1:
+      #  count = mac_list.count(e_addr)
+      #  print("Count: "+str(count))
+        if mac_list.count(e_addr) > 1:
             print("Mac Address of Attacker: " + e_addr + " IP: " + s_ip)
             engine.say('Possible Intrusion Alert! Network may have been breached! Run preventive maneuvers!')
             engine.runAndWait()
