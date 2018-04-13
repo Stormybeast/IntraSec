@@ -3,7 +3,7 @@ import Constant
 
 
 def getLocalIp():
-    ip = os.popen("ifconfig " + Constant.INTERFACE + " | grep \"inet 地址\" | cut -d ':' -f 2 | cut -d ' ' -f 1")
+    ip = os.popen("ifconfig " + Constant.INTERFACE + " | grep \"inet addr\" | cut -d ':' -f 2 | cut -d ' ' -f 1")
     ip = str(ip.read())
     print("The system ip is: " + ip)
     return ip

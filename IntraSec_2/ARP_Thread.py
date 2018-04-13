@@ -21,7 +21,7 @@ class ARP_Thread(QThread):
             self.arpSpoof()
             time.sleep(Constant.WAITING_INTERVAL)
             self.trigger.emit()
-            time.sleep(Constant.REFRESHING_INTERVAL - Constant.WAITING_INTERVAL)
+            time.sleep(Constant.WAITING_INTERVAL - Constant.REFRESHING_INTERVAL)
 
     def stop(self):
         self.stopFlag = True
