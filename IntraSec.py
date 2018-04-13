@@ -19,7 +19,7 @@ def analyze(pack,ip_list,mac_list,thread=None):
         s_ip = socket.inet_ntoa(iph[8])
         d_ip = socket.inet_ntoa(iph[9])
         print('Source MAC : '+e_addr)
-       # print('Source IP: '+str(s_ip))
+        print('Source IP: '+str(s_ip))
        # print('Dest MAC : ' + get_e_addr(pack[0:6]))
        # print('Dest IP: '+str(d_ip))
 
@@ -50,7 +50,7 @@ def caller():
 
 
 def get_sys_ip():
-    ip = os.popen("ifconfig "+interface+" | grep \"inet addr\" | cut -d ':' -f 2 | cut -d ' ' -f 1")
+    ip = os.popen("ifconfig "+interface+" | grep \"inet 地址\" | cut -d ':' -f 2 | cut -d ' ' -f 1")
     ip = str(ip.read())
     print("The system ip is: "+ip)
     return ip

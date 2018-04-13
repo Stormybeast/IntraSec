@@ -257,12 +257,10 @@ class arpThread(QtCore.QThread):
 
     def run(self):
         while not self.stopFlag:
-            self.app.update_attacker("Creating ARP...")
+            self.app.update_attacker("Refreshing ARP...")
             IntraSec.get_arp()
             time.sleep(60)
-            self.app.update_attacker("Done ARP")
             self.trigger.emit()
-
 
     def stop(self):
         self.stopFlag = True
