@@ -139,7 +139,7 @@ class App(QtGui.QMainWindow):
         # update the UI when ARP table has been created
         self.arpingThread.trigger.connect(self.update_arp)
         # update the UI when attacker has been found
-        self.workingThread.trigger.connect(lambda: self.update_attacker("Found Attacker"))
+        self.workingThread.trigger.connect(self.update_attacker)
 
         self.arpingThread.start()
         time.sleep(Constant.WAITING_INTERVAL)

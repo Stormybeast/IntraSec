@@ -2,17 +2,22 @@ from PyQt4.QtCore import QThread, pyqtSignal
 import socket, multiprocessing, json
 from struct import *
 from NetworkParameters import getMacFromPack,getIP,getMAC
+from ARP_Thread import ARP_Thread
 from pyttsx3 import engine
 import Preventor
 BLACK_LIST = dict()
 
+thread = 0
+
 class Analyzing_Thread(QThread):
-    trigger = pyqtSignal()
+    trigger = pyqtSignal(str)
 
     def __init__(self, app):
+        global thread
         super(QThread, self).__init__()
         self.stopFlag = False
         self.app = app
+        thread = self.trigger
 
     def stop(self):
         self.stopFlag = True
@@ -27,14 +32,18 @@ class Analyzing_Thread(QThread):
 
         while not self.stopFlag:
             # find the attacker
-            pack = s.recvfrom(65565)
-            pool1.apply_async(analyze, args=(pack, getMAC(), getIP(), self.trigger),callback=check)
+            pack = s.recvfrom(65000)
+            r = pool1.apply_async(analyze, args=(pack, getIP(), getMAC(), self.trigger), callback=check)
+            r.wait()
 
         pool1.close()
 
 
 def check(x):
     if x is not None:
+        if x not in BLACK_LIST:
+            print("Attacker: " + str(x))
+            thread.emit("Attacker Found:"+str(x))
         BLACK_LIST[x] = BLACK_LIST.setdefault(x, 0) + 1
         with open('BLACK_LIST.json', 'w') as fp:
             json.dump(BLACK_LIST, fp)
@@ -59,9 +68,7 @@ def analyze(pack,ip_list,mac_list,thread):
 
         if mac_list.count(e_addr) > 1:
             print("Mac Address of Attacker: " + e_addr + " IP: " + s_ip)
-            engine.say('Possible Intrusion Alert! Network may have been breached! Run preventive maneuvers!')
-            engine.runAndWait()
-            thread.emit()
+            # engine.say('Possible Intrusion Alert! Network may have been breached! Run preventive maneuvers!')
+            # engine.runAndWait()
             return e_addr
-
     return None
