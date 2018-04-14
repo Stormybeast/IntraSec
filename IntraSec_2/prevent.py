@@ -27,14 +27,15 @@ def getVictim(mac):
     print(ip_a)
     for i in range(len(ip_a)):
         print("Printing outcomes for ip: "+ip_a[i])
-        for j in range(1, 10):
+        for j in range(1, 20):
             os.system("arp-scan "+str(ip_a[i])+" -I "+Constant.INTERFACE+" | grep -oE \"([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})\" > scan.txt")
             ms = open("scan.txt")
             mac_s = ms.readlines()
+
             for k in range(len(mac_s)):
-                if mac != mac_s[k]:
+                if mac != mac_s[k].strip("\n"):
                     mac_v = mac_s[k]
-    print("Mac address of the victim is: "+mac_v)
+        print("Mac address of the victim is: "+str(mac_v))
 
 
 
