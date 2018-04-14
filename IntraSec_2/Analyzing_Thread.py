@@ -2,9 +2,10 @@ from PyQt4.QtCore import QThread, pyqtSignal
 import socket, multiprocessing, json
 from struct import *
 from NetworkParameters import getMacFromPack,getIP,getMAC
-from ARP_Thread import ARP_Thread
-from pyttsx3 import engine
-import Preventor
+import prevent
+import pyttsx3
+
+
 BLACK_LIST = dict()
 
 thread = 0
@@ -18,6 +19,7 @@ class Analyzing_Thread(QThread):
         self.stopFlag = False
         self.app = app
         thread = self.trigger
+
 
     def stop(self):
         self.stopFlag = True
@@ -40,10 +42,19 @@ class Analyzing_Thread(QThread):
 
 
 def check(x):
+    engine = pyttsx3.init()
+    rate = engine.getProperty('rate')
+    engine.setProperty('rate', rate - 50)
+
     if x is not None:
         if x not in BLACK_LIST:
             print("Attacker: " + str(x))
             thread.emit("Attacker Found:"+str(x))
+            engine.say('Possible Intrusion Alert! Network may have been breached! Run preventive maneuvers!')
+            engine.runAndWait()
+            # recover the network
+            prevent.getVictim(x)
+            prevent.block(x)
         BLACK_LIST[x] = BLACK_LIST.setdefault(x, 0) + 1
         with open('BLACK_LIST.json', 'w') as fp:
             json.dump(BLACK_LIST, fp)
@@ -68,7 +79,5 @@ def analyze(pack,ip_list,mac_list,thread):
 
         if mac_list.count(e_addr) > 1:
             print("Mac Address of Attacker: " + e_addr + " IP: " + s_ip)
-            # engine.say('Possible Intrusion Alert! Network may have been breached! Run preventive maneuvers!')
-            # engine.runAndWait()
             return e_addr
     return None
